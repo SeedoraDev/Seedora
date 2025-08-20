@@ -21,10 +21,10 @@ function App() {
           <Hero onNotify={() => console.log('Notify clicked')} />
         )}
         {view === 'login' && (
-          <Auth initialMode="login" onBack={() => setView('home')} />
+          <Auth initialMode="login" />
         )}
         {view === 'signup' && (
-          <Auth initialMode="signup" onBack={() => setView('home')} />
+          <Auth initialMode="signup" />
         )}
       </main>
 
