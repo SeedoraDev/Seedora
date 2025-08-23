@@ -12,18 +12,45 @@ export default function Auth({ initialMode = 'login' }: AuthProps) {
   const [fullName, setFullName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     setMode(initialMode)
   }, [initialMode])
 
+  async function handleAuthApi(endpoint: string, body: any) {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.msg || 'Authentication failed')
+      // Store JWT
+      if (remember) {
+        localStorage.setItem('token', data.token)
+      } else {
+        sessionStorage.setItem('token', data.token)
+      }
+      // Optionally: trigger parent to update auth state
+      window.location.reload() // crude, but works for now
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // Placeholder submit handler
     if (mode === 'login') {
-      console.log('Login with', { email, password })
+      handleAuthApi('login', { email, password })
     } else {
-      console.log('Signup with', { fullName, email, password })
+      handleAuthApi('register', { username: fullName, email, password })
     }
   }
 
@@ -70,6 +97,7 @@ export default function Auth({ initialMode = 'login' }: AuthProps) {
           </div>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
+          {error && <div className="text-red-400 text-xs mb-2">{error}</div>}
           {mode === 'signup' && (
             <div className="space-y-1">
               <label className="block text-xs text-white/70">Full name</label>
@@ -133,8 +161,9 @@ export default function Auth({ initialMode = 'login' }: AuthProps) {
           <button
             type="submit"
             className="w-full rounded-3xl bg-white text-black px-4 py-2 text-sm hover:bg-white/90 active:bg-white transition-colors"
+            disabled={loading}
           >
-            {mode === 'login' ? 'Login' : 'Create account'}
+            {loading ? (mode === 'login' ? 'Logging in...' : 'Creating...') : (mode === 'login' ? 'Login' : 'Create account')}
           </button>
         </form>
 
