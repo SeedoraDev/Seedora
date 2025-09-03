@@ -1,1 +1,80 @@
 @import "tailwindcss";
+
+/* Custom floating animations */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(-10px) translateX(5px); }
+  50% { transform: translateY(-5px) translateX(-8px); }
+  75% { transform: translateY(-15px) translateX(3px); }
+}
+
+@keyframes float-slower {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-8px) translateX(-6px); }
+  66% { transform: translateY(-12px) translateX(4px); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  20% { transform: translateY(-12px) translateX(7px); }
+  40% { transform: translateY(-6px) translateX(-5px); }
+  60% { transform: translateY(-18px) translateX(-3px); }
+  80% { transform: translateY(-4px) translateX(9px); }
+}
+
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(-15px) translateX(-8px); }
+  50% { transform: translateY(-8px) translateX(6px); }
+  75% { transform: translateY(-20px) translateX(-4px); }
+}
+
+@keyframes float-slow-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(10px) translateX(-5px); }
+  50% { transform: translateY(5px) translateX(8px); }
+  75% { transform: translateY(15px) translateX(-3px); }
+}
+
+@keyframes float-medium-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  20% { transform: translateY(12px) translateX(-7px); }
+  40% { transform: translateY(6px) translateX(5px); }
+  60% { transform: translateY(18px) translateX(3px); }
+  80% { transform: translateY(4px) translateX(-9px); }
+}
+
+@keyframes float-fast-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(15px) translateX(8px); }
+  50% { transform: translateY(8px) translateX(-6px); }
+  75% { transform: translateY(20px) translateX(4px); }
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-slower 12s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 6s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 4s ease-in-out infinite;
+}
+
+.animate-float-slow-reverse {
+  animation: float-slow-reverse 9s ease-in-out infinite;
+}
+
+.animate-float-medium-reverse {
+  animation: float-medium-reverse 7s ease-in-out infinite;
+}
+
+.animate-float-fast-reverse {
+  animation: float-fast-reverse 5s ease-in-out infinite;
+}

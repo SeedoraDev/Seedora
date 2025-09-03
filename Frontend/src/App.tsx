@@ -1,16 +1,18 @@
 import './index.css'
 import { useEffect, useState } from 'react'
 import Navbar from './components/navbar'
-import Hero from './components/Hero'
+import LandingPage from './components/LandingPage'
+import UploadPage from './components/UploadPage'
 import Footer from './components/footter'
 import Auth from './components/Auth'
+import AnimatedBackground from './components/AnimatedBackground'
 
 function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token')
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'login' | 'signup'>('home')
+  const [view, setView] = useState<'home' | 'upload' | 'login' | 'signup'>('home')
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -20,10 +22,18 @@ function App() {
       setLoading(false)
       return
     }
+    
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+      setUser(null)
+    }, 5000)
+    
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/me`, {
       headers: { 'x-auth-token': token },
     })
       .then(async (res) => {
+        clearTimeout(timeoutId)
         if (!res.ok) throw new Error('Not authenticated')
         return res.json()
       })
@@ -42,23 +52,34 @@ function App() {
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>
 
   return (
-    <div className="min-h-screen w-screen bg-black text-white flex flex-col">
+    <div className={`w-screen bg-black text-white flex flex-col ${view === 'login' || view === 'signup' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       <Navbar
         user={user}
         onLogin={() => setView('login')}
         onSignup={() => setView('signup')}
         onHome={() => setView('home')}
+        onUpload={() => setView('upload')}
         onLogout={handleLogout}
       />
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6">
-        {user ? (
-          <Hero onNotify={() => console.log('Notify clicked')} />
+      <main className="flex-1">
+        {view === 'upload' ? (
+          <UploadPage onBack={() => setView('home')} />
         ) : view === 'login' ? (
-          <Auth initialMode="login" />
+          <div className="relative flex items-center justify-center h-full overflow-hidden px-4 sm:px-6 py-8">
+            <AnimatedBackground />
+            <div className="relative z-10">
+              <Auth initialMode="login" />
+            </div>
+          </div>
         ) : view === 'signup' ? (
-          <Auth initialMode="signup" />
+          <div className="relative flex items-center justify-center h-full overflow-hidden px-4 sm:px-6 py-8">
+            <AnimatedBackground />
+            <div className="relative z-10">
+              <Auth initialMode="signup" />
+            </div>
+          </div>
         ) : (
-          <Hero onNotify={() => console.log('Notify clicked')} />
+          <LandingPage onGetStarted={() => setView('upload')} />
         )}
       </main>
       <Footer />
