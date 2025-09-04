@@ -11,7 +11,10 @@
     "dotenv": "*",
     "express": "*",
     "jsonwebtoken": "*",
-    "mongoose": "*"
+    "mongoose": "*",
+    "passport": "*",
+    "passport-google-oauth20": "*",
+    "express-session": "*"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

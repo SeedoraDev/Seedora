@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage'
 import UploadPage from './components/UploadPage'
 import Footer from './components/footter'
 import Auth from './components/Auth'
+import AuthSuccess from './components/AuthSuccess'
 import AnimatedBackground from './components/AnimatedBackground'
 
 function getToken() {
@@ -12,11 +13,18 @@ function getToken() {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'upload' | 'login' | 'signup'>('home')
+  const [view, setView] = useState<'home' | 'upload' | 'login' | 'signup' | 'auth-success'>('home')
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check if we're on the auth success route
+    if (window.location.pathname === '/auth/success') {
+      setView('auth-success')
+      setLoading(false)
+      return
+    }
+
     const token = getToken()
     if (!token) {
       setLoading(false)
@@ -78,6 +86,8 @@ function App() {
               <Auth initialMode="signup" />
             </div>
           </div>
+        ) : view === 'auth-success' ? (
+          <AuthSuccess />
         ) : (
           <LandingPage onGetStarted={() => setView('upload')} />
         )}
