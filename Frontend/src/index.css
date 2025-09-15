@@ -78,3 +78,205 @@
 .animate-float-fast-reverse {
   animation: float-fast-reverse 5s ease-in-out infinite;
 }
+
+/* Print Styles for Medical Report */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .print-report {
+    font-family: 'Arial', sans-serif !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 40px !important;
+    background: white !important;
+    color: #333 !important;
+    page-break-inside: avoid;
+  }
+  
+  .print-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    margin-bottom: 40px !important;
+    padding-bottom: 20px !important;
+    border-bottom: 2px solid #e5e7eb !important;
+  }
+  
+  .print-logo h1 {
+    font-size: 32px !important;
+    font-weight: bold !important;
+    color: #1f2937 !important;
+    margin: 0 0 8px 0 !important;
+  }
+  
+  .print-logo p {
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
+  }
+  
+  .print-date {
+    text-align: right !important;
+  }
+  
+  .print-date p {
+    font-size: 12px !important;
+    color: #6b7280 !important;
+    margin: 2px 0 !important;
+  }
+  
+  .print-content {
+    margin-bottom: 40px !important;
+  }
+  
+  .print-section {
+    margin-bottom: 30px !important;
+    page-break-inside: avoid;
+  }
+  
+  .print-section h2 {
+    font-size: 24px !important;
+    font-weight: bold !important;
+    color: #1f2937 !important;
+    margin: 0 0 20px 0 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  
+  .print-section h3 {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin: 0 0 15px 0 !important;
+  }
+  
+  .print-risk-summary {
+    display: flex !important;
+    align-items: center !important;
+    gap: 30px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .print-risk-score {
+    text-align: center !important;
+  }
+  
+  .print-percentage {
+    display: block !important;
+    font-size: 48px !important;
+    font-weight: bold !important;
+    color: #1f2937 !important;
+    line-height: 1 !important;
+  }
+  
+  .print-risk-label {
+    display: block !important;
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-top: 8px !important;
+  }
+  
+  .print-risk-badge {
+    padding: 12px 24px !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    text-align: center !important;
+  }
+  
+  .print-risk-badge.low-risk {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+    border: 2px solid #22c55e !important;
+  }
+  
+  .print-risk-badge.medium-risk {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border: 2px solid #f59e0b !important;
+  }
+  
+  .print-risk-badge.high-risk {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 2px solid #ef4444 !important;
+  }
+  
+  .print-details {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+  }
+  
+  .print-detail-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  
+  .print-detail-row:last-child {
+    border-bottom: none !important;
+  }
+  
+  .print-detail-row span:first-child {
+    font-weight: 500 !important;
+    color: #374151 !important;
+  }
+  
+  .print-detail-row span:last-child {
+    color: #1f2937 !important;
+  }
+  
+  .print-recommendations {
+    background-color: #eff6ff !important;
+    border: 1px solid #3b82f6 !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+  }
+  
+  .print-recommendations p {
+    margin: 0 !important;
+    line-height: 1.6 !important;
+    color: #1e40af !important;
+  }
+  
+  .print-disclaimer {
+    background-color: #fef7ff !important;
+    border: 1px solid #a855f7 !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+  }
+  
+  .print-disclaimer p {
+    margin: 0 !important;
+    line-height: 1.6 !important;
+    color: #7c2d12 !important;
+    font-size: 14px !important;
+  }
+  
+  .print-footer {
+    text-align: center !important;
+    padding-top: 20px !important;
+    border-top: 1px solid #e5e7eb !important;
+    margin-top: 40px !important;
+  }
+  
+  .print-footer p {
+    margin: 4px 0 !important;
+    font-size: 12px !important;
+    color: #6b7280 !important;
+  }
+}

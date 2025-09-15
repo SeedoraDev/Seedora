@@ -45,6 +45,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Placeholder for auth routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/predict', require('./routes/predict'));
 
 app.get('/', (req, res) => {
   res.send('Seedora Backend Running');

@@ -1,91 +1,89 @@
-import { useState } from 'react'
+import React, { useState } from 'react';
+import { useAnalysis } from '../contexts/AnalysisContext';
 import AnimatedBackground from './AnimatedBackground'
 
-type UploadPageProps = {
+interface UploadPageProps {
   onBack: () => void
 }
 
 export default function UploadPage({ onBack }: UploadPageProps) {
+  const { analysisState, startAnalysis, clearAnalysis } = useAnalysis()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [patientInfo, setPatientInfo] = useState({
-    age: '',
-    gender: '',
-    height: '',
-    weight: ''
-  })
-  const [result, setResult] = useState<{
-    riskPercentage: number
-    riskLevel: 'Low' | 'Medium' | 'High'
-    recommendations: string[]
-    confidence: number
-  } | null>(null)
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
-    
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
+      const file = e.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
-        setSelectedFile(file)
+        setSelectedFile(file);
+        clearAnalysis();
       }
     }
-  }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0])
+      setSelectedFile(e.target.files[0]);
     }
-  }
+  };
 
-  const handleAnalyze = async () => {
-    if (!selectedFile) return
-    
-    setAnalyzing(true)
-    
-    // Simulate AI analysis - replace with actual API call
-    setTimeout(() => {
-      const mockRisk = Math.floor(Math.random() * 100)
-      const riskLevel = mockRisk < 30 ? 'Low' : mockRisk < 70 ? 'Medium' : 'High'
-      
-      setResult({
-        riskPercentage: mockRisk,
-        riskLevel,
-        confidence: 0.85 + Math.random() * 0.1,
-        recommendations: [
-          'Regular foot inspection recommended',
-          'Maintain optimal blood glucose levels',
-          'Use proper diabetic footwear',
-          'Schedule follow-up with healthcare provider',
-          'Monitor for any changes in skin temperature'
-        ]
-      })
-      setAnalyzing(false)
-    }, 3000)
-  }
+  const analyzeImage = async () => {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      const response = await fetch('http://localhost:5001/api/predict', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Analysis failed');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      return data;
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(err.message);
+      } else {
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+
+  const handleAnalyze = () => {
+    if (!selectedFile) return;
+    startAnalysis(analyzeImage);
+  };
 
   const resetAnalysis = () => {
     setSelectedFile(null)
-    setResult(null)
-    setAnalyzing(false)
-    setPatientInfo({ age: '', gender: '', height: '', weight: '' })
+    clearAnalysis()
   }
 
   return (
-    <div className="w-full min-h-screen relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 relative overflow-hidden">
       <AnimatedBackground />
       
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
@@ -111,306 +109,413 @@ export default function UploadPage({ onBack }: UploadPageProps) {
           </div>
         </div>
 
-        {!result ? (
-          <div className="grid lg:grid-cols-2 gap-8">
+        {!analysisState.result ? (
+          <div className="max-w-3xl mx-auto">
+            {/* Loading Overlay */}
+            {analysisState.isAnalyzing && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="bg-white/[0.05] backdrop-blur-sm rounded-3xl border border-white/[0.1] p-12 text-center max-w-md mx-4">
+                  <div className="relative w-32 h-32 mx-auto mb-6">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        className="text-white/20"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={`${analysisState.progress * 2.51} 251`}
+                        className="text-blue-400"
+                        style={{
+                          strokeLinecap: 'round',
+                          transition: 'stroke-dasharray 0.5s ease-in-out'
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl font-light text-white mb-1">{Math.round(analysisState.progress)}%</div>
+                        <div className="text-xs text-white/70">Analyzing</div>
+                      </div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-light text-white mb-2">AI Analysis in Progress</h3>
+                  <p className="text-white/60 text-sm mb-4">Processing your thermogram using ResNet-152 and DenseNet models</p>
+                  <div className="flex items-center justify-center space-x-2 text-white/40 text-xs">
+                    <div className="animate-pulse">●</div>
+                    <span>Please wait while we analyze your image</span>
+                    <div className="animate-pulse delay-300">●</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Upload Section */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-              <h2 className="text-xl font-medium text-white mb-6 flex items-center">
-                <svg className="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Upload Thermogram
-              </h2>
-              
-              <div
-                className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 min-h-[300px] flex flex-col justify-center ${
-                  dragActive
-                    ? 'border-blue-400 bg-blue-400/10 scale-[1.02]'
-                    : 'border-white/20 hover:border-white/40 hover:bg-white/5'
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                
-                {selectedFile ? (
-                  <div className="space-y-6">
-                    <div className="flex justify-center">
-                      <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full flex items-center justify-center">
-                          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <p className="text-white font-medium text-lg">{selectedFile.name}</p>
-                      <p className="text-white/60 text-sm mt-1">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready for analysis
-                      </p>
-                    </div>
-                    <button
-                      onClick={resetAnalysis}
-                      className="inline-flex items-center text-white/70 hover:text-white text-sm transition-colors group"
-                    >
-                      <svg className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/[0.12] shadow-2xl overflow-hidden">
+              <div className="p-8 pb-6">
+                <div className="text-center mb-6">
+                  <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-2xl blur-xl"></div>
+                    <div className="relative bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-2xl p-4 border border-white/[0.15]">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth={1.5}/>
+                        <circle cx="8.5" cy="8.5" r="1.5" strokeWidth={1.5}/>
+                        <path d="M21 15l-5-5L5 21" strokeWidth={1.5}/>
                       </svg>
-                      Choose different file
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="flex justify-center">
-                      <div className="relative">
-                        <div className="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center border border-white/10">
-                          <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                        </div>
-                        {/* Floating animation elements */}
-                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-400/30 rounded-full animate-pulse"></div>
-                        <div className="absolute -bottom-1 -left-2 w-3 h-3 bg-purple-400/30 rounded-full animate-pulse delay-300"></div>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-medium text-white">Upload Thermogram Image</h3>
-                      <p className="text-white/70">Drop your thermogram image here or click to browse</p>
-                      <div className="flex items-center justify-center space-x-6 text-sm text-white/50">
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
-                          </svg>
-                          JPG, PNG, TIFF
-                        </div>
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Max 10MB
-                        </div>
-                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Patient Information */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-              <h2 className="text-xl font-medium text-white mb-6 flex items-center">
-                <svg className="w-6 h-6 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Patient Information
-                <span className="ml-2 text-xs text-white/50">(Optional)</span>
-              </h2>
+                  <h2 className="text-3xl font-light text-white mb-3 bg-gradient-to-r from-white to-white/80 bg-clip-text">Upload Thermogram</h2>
+                  <p className="text-white/60 text-base">Drag and drop your image or click to browse</p>
+                </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Age</label>
+                <div
+                  className={`relative border-2 border-dashed rounded-2xl transition-all duration-500 min-h-[320px] flex flex-col justify-center ${
+                    dragActive
+                      ? 'border-blue-400/50 bg-gradient-to-br from-blue-400/[0.08] to-purple-400/[0.05] scale-[1.02] shadow-lg shadow-blue-400/10'
+                      : 'border-white/[0.2] hover:border-white/40 hover:bg-white/[0.03]'
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
                   <input
-                    type="number"
-                    placeholder="Enter age"
-                    value={patientInfo.age}
-                    onChange={(e) => setPatientInfo({...patientInfo, age: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-blue-400 focus:bg-white/10 outline-none transition-all"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
+                  
+                  {selectedFile ? (
+                    <div className="space-y-8 p-8">
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/30 to-green-400/30 rounded-3xl blur-lg"></div>
+                          <div className="relative w-28 h-28 bg-gradient-to-br from-emerald-400/20 to-green-400/20 rounded-3xl flex items-center justify-center border border-emerald-400/40 backdrop-blur-sm">
+                            <svg className="w-14 h-14 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.04] rounded-2xl p-8 border border-white/[0.12] backdrop-blur-sm">
+                        <div className="text-center">
+                          <p className="text-white font-medium text-xl mb-2">{selectedFile.name}</p>
+                          <p className="text-white/60 text-sm mb-4">
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready for AI analysis
+                          </p>
+                          <div className="inline-flex items-center px-4 py-2 bg-emerald-400/20 text-emerald-400 rounded-full text-sm border border-emerald-400/30">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            File validated
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={resetAnalysis}
+                        className="inline-flex items-center text-white/60 hover:text-white transition-all duration-300 group mx-auto text-sm"
+                      >
+                        <svg className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Choose different file
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-8 p-8">
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] to-white/[0.05] rounded-3xl blur-xl"></div>
+                          <div className="relative w-24 h-24 bg-gradient-to-br from-white/[0.08] to-white/[0.04] rounded-3xl flex items-center justify-center border border-white/[0.15] backdrop-blur-sm">
+                            <svg className="w-12 h-12 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth={1.5}/>
+                              <circle cx="8.5" cy="8.5" r="1.5" strokeWidth={1.5}/>
+                              <path d="M21 15l-5-5L5 21" strokeWidth={1.5}/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-6 text-center">
+                        <div>
+                          <h3 className="text-2xl font-light text-white mb-2">Drop your thermogram here</h3>
+                          <p className="text-white/60 text-base">or click to browse files from your device</p>
+                        </div>
+                        <div className="flex items-center justify-center space-x-8 text-sm text-white/50 pt-4">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>JPG, PNG, TIFF</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                            <span>Max 10MB</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Gender</label>
-                  <select 
-                    value={patientInfo.gender}
-                    onChange={(e) => setPatientInfo({...patientInfo, gender: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-400 focus:bg-white/10 outline-none transition-all"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Height (cm)</label>
-                  <input
-                    type="number"
-                    placeholder="Enter height"
-                    value={patientInfo.height}
-                    onChange={(e) => setPatientInfo({...patientInfo, height: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-blue-400 focus:bg-white/10 outline-none transition-all"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Weight (kg)</label>
-                  <input
-                    type="number"
-                    placeholder="Enter weight"
-                    value={patientInfo.weight}
-                    onChange={(e) => setPatientInfo({...patientInfo, weight: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-blue-400 focus:bg-white/10 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <p className="text-blue-200 text-sm">
-                  <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Patient information helps improve analysis accuracy but is not required for basic assessment.
-                </p>
               </div>
             </div>
           </div>
         ) : (
           /* Results Section */
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
-            <h2 className="text-3xl font-light text-white mb-8 text-center">Analysis Results</h2>
-            
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Risk Assessment */}
-              <div className="text-center">
-                <div className="relative w-56 h-56 mx-auto mb-6">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-white/20"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={`${result.riskPercentage * 2.51} 251`}
-                      className={
-                        result.riskLevel === 'Low'
-                          ? 'text-green-400'
-                          : result.riskLevel === 'Medium'
-                          ? 'text-yellow-400'
-                          : 'text-red-400'
-                      }
-                      style={{
-                        strokeLinecap: 'round',
-                        transition: 'stroke-dasharray 1s ease-in-out'
-                      }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl font-light text-white mb-1">{result.riskPercentage}%</div>
-                      <div className="text-sm text-white/70">DFU Risk</div>
-                    </div>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-light text-white mb-2">Analysis Complete</h2>
+              <p className="text-white/60">AI-powered diabetic foot ulcer risk assessment results</p>
+            </div>
+
+            {analysisState.error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center">
+                <p className="text-red-400">{analysisState.error}</p>
+              </div>
+            )}
+
+            {/* Hidden Print Report */}
+            <div id="print-report" className="hidden">
+              <div className="print-report">
+                <div className="print-header">
+                  <div className="print-logo">
+                    <h1>Seedora</h1>
+                    <p>AI-Powered Diabetic Foot Ulcer Risk Assessment</p>
+                  </div>
+                  <div className="print-date">
+                    <p>Report Date: {new Date().toLocaleDateString()}</p>
+                    <p>Report Time: {new Date().toLocaleTimeString()}</p>
                   </div>
                 </div>
                 
-                <div
-                  className={`inline-flex px-6 py-3 rounded-full text-sm font-medium mb-4 ${
-                    result.riskLevel === 'Low'
-                      ? 'bg-green-400/20 text-green-400 border border-green-400/30'
-                      : result.riskLevel === 'Medium'
-                      ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
-                      : 'bg-red-400/20 text-red-400 border border-red-400/30'
-                  }`}
-                >
-                  {result.riskLevel} Risk Level
+                <div className="print-content">
+                  <div className="print-section">
+                    <h2>Risk Assessment Results</h2>
+                    <div className="print-risk-summary">
+                      <div className="print-risk-score">
+                        <span className="print-percentage">{analysisState.result?.prediction.toFixed(2)}%</span>
+                        <span className="print-risk-label">DFU Risk Score</span>
+                      </div>
+                      <div className={`print-risk-badge ${
+                        (analysisState.result?.prediction || 0) < 30 ? 'low-risk' : 
+                        (analysisState.result?.prediction || 0) < 70 ? 'medium-risk' : 'high-risk'
+                      }`}>
+                        {(analysisState.result?.prediction || 0) < 30 ? 'Low Risk' : 
+                         (analysisState.result?.prediction || 0) < 70 ? 'Medium Risk' : 'High Risk'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="print-section">
+                    <h3>Assessment Details</h3>
+                    <div className="print-details">
+                      <div className="print-detail-row">
+                        <span>Prediction Confidence:</span>
+                        <span>High</span>
+                      </div>
+                      <div className="print-detail-row">
+                        <span>AI Model Used:</span>
+                        <span>ResNet-152 + DenseNet</span>
+                      </div>
+                      <div className="print-detail-row">
+                        <span>Analysis Time:</span>
+                        <span>{analysisState.startTime ? `${Math.floor((Date.now() - analysisState.startTime) / 1000)}s` : 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="print-section">
+                    <h3>Clinical Recommendations</h3>
+                    <div className="print-recommendations">
+                      <p>{(analysisState.result?.prediction || 0) < 30 
+                        ? "Continue regular foot care and monitoring. Schedule routine check-ups with your healthcare provider."
+                        : (analysisState.result?.prediction || 0) < 70
+                        ? "Increased monitoring recommended. Consider consulting with a podiatrist for preventive care strategies."
+                        : "Immediate medical attention recommended. Please consult with a healthcare professional promptly for further evaluation."
+                      }</p>
+                    </div>
+                  </div>
+
+                  <div className="print-section">
+                    <h3>Important Notice</h3>
+                    <div className="print-disclaimer">
+                      <p>This AI-powered assessment is intended for screening purposes only and should not replace professional medical diagnosis. Please consult with qualified healthcare professionals for comprehensive evaluation and treatment planning.</p>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="text-white/60 text-sm">
-                  Confidence: {(result.confidence * 100).toFixed(1)}%
+
+                <div className="print-footer">
+                  <p>Generated by Seedora AI Platform | www.seedora.com</p>
+                  <p>For medical inquiries, please contact your healthcare provider</p>
                 </div>
               </div>
-              
-              {/* Recommendations */}
-              <div>
-                <h3 className="text-xl font-medium text-white mb-6 flex items-center">
-                  <svg className="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Recommendations
-                </h3>
-                <ul className="space-y-3">
-                  {result.recommendations.map((rec, index) => (
-                    <li key={index} className="flex items-start">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                      <span className="text-white/80">{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                  <p className="text-purple-200 text-sm">
-                    <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </div>
+
+            {/* Main Results Card */}
+            <div className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] backdrop-blur-xl rounded-2xl border border-white/[0.1] p-8">
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                {/* Risk Visualization */}
+                <div className="text-center">
+                  <div className="relative w-48 h-48 mx-auto mb-6">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        className="text-white/10"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        strokeDasharray={`${(analysisState.result?.prediction || 0) * 2.2} 220`}
+                        className={ 
+                          (analysisState.result?.prediction || 0) < 30 ? 'text-green-400' : (analysisState.result?.prediction || 0) < 70 ? 'text-yellow-400' : 'text-red-400'
+                        }
+                        style={{
+                          strokeLinecap: 'round',
+                          transition: 'stroke-dasharray 1.5s ease-in-out'
+                        }}
+                      />
                     </svg>
-                    This analysis is for screening purposes only. Consult a healthcare professional for medical advice.
-                  </p>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl font-light text-white mb-1">{analysisState.result?.prediction.toFixed(2)}%</div>
+                        <div className="text-white/60 text-xs uppercase tracking-wider">DFU Risk</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div
+                    className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                      (analysisState.result?.prediction || 0) < 30
+                        ? 'bg-green-400/20 text-green-400 border border-green-400/30'
+                        : (analysisState.result?.prediction || 0) < 70
+                        ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+                        : 'bg-red-400/20 text-red-400 border border-red-400/30'
+                    }`}
+                  >
+                    {(analysisState.result?.prediction || 0) < 30 ? 'Low Risk' : (analysisState.result?.prediction || 0) < 70 ? 'Medium Risk' : 'High Risk'}
+                  </div>
+                </div>
+
+                {/* Risk Information */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xl font-light text-white mb-4">Assessment Details</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-white/[0.04] rounded-lg">
+                        <span className="text-white/70 text-sm">Confidence</span>
+                        <span className="text-white text-sm">High</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white/[0.04] rounded-lg">
+                        <span className="text-white/70 text-sm">Model</span>
+                        <span className="text-white text-sm">ResNet-152</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white/[0.04] rounded-lg">
+                        <span className="text-white/70 text-sm">Time</span>
+                        <span className="text-white text-sm">{analysisState.startTime ? `${Math.floor((Date.now() - analysisState.startTime) / 1000)}s` : 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  <div className="bg-blue-400/10 rounded-lg p-4 border border-blue-400/20">
+                    <h4 className="text-sm font-medium text-white mb-2 flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Recommendation
+                    </h4>
+                    <div className="text-white/80 text-xs leading-relaxed">
+                      {(analysisState.result?.prediction || 0) < 30 
+                        ? "Continue regular foot care and monitoring."
+                        : (analysisState.result?.prediction || 0) < 70
+                        ? "Increased monitoring recommended. Consider consulting a podiatrist."
+                        : "Immediate medical attention recommended. Consult healthcare professional."
+                      }
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={resetAnalysis}
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-gray-100 transition-all duration-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                New Analysis
+              </button>
+              <button
+                onClick={() => {
+                  const printContent = document.getElementById('print-report');
+                  const originalContent = document.body.innerHTML;
+                  
+                  if (printContent) {
+                    document.body.innerHTML = printContent.innerHTML;
+                    window.print();
+                    document.body.innerHTML = originalContent;
+                    window.location.reload();
+                  }
+                }}
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-all duration-300 border border-white/20"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print
+              </button>
             </div>
           </div>
         )}
         
-        {/* Action Buttons */}
-        <div className="mt-8 text-center">
-          {!result ? (
+        {/* Upload Action Button */}
+        {!analysisState.result && (
+          <div className="mt-8 flex justify-center">
             <button
               onClick={handleAnalyze}
-              disabled={!selectedFile || analyzing}
-              className={`px-8 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedFile && !analyzing
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 shadow-lg'
+              disabled={!selectedFile || analysisState.isAnalyzing}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
+                selectedFile && !analysisState.isAnalyzing
+                  ? 'bg-white text-black hover:bg-gray-100 shadow-lg'
                   : 'bg-white/10 text-white/40 cursor-not-allowed'
               }`}
             >
-              {analyzing ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  Analyzing Thermogram...
-                </div>
+              {analysisState.isAnalyzing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                  Analyzing...
+                </>
               ) : (
-                'Start AI Analysis'
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Start Analysis
+                </>
               )}
             </button>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={resetAnalysis}
-                className="px-6 py-3 border border-white/20 text-white rounded-full text-sm hover:bg-white/5 transition-all duration-300"
-              >
-                Analyze Another Image
-              </button>
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105">
-                Download Report
-              </button>
-              <button className="px-6 py-3 border border-white/20 text-white rounded-full text-sm hover:bg-white/5 transition-all duration-300">
-                Share Results
-              </button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

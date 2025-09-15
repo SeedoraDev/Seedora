@@ -10,14 +10,14 @@
     "cors": "*",
     "dotenv": "*",
     "express": "*",
+    "express-session": "*",
     "jsonwebtoken": "*",
     "mongoose": "*",
+    "multer": "^2.0.2",
     "passport": "*",
-    "passport-google-oauth20": "*",
-    "express-session": "*"
+    "passport-google-oauth20": "*"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
   }
 }
-
