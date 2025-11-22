@@ -36,15 +36,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Placeholder for auth routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/developer', require('./routes/developer'));
 app.use('/api/predict', require('./routes/predict'));
 
 app.get('/', (req, res) => {

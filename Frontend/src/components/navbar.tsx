@@ -6,10 +6,12 @@ interface NavbarProps {
   onSignup: () => void
   onHome?: () => void
   onUpload?: () => void
+  onDashboard?: () => void
+  onDeveloperPortal?: () => void
   onLogout?: () => void
 }
 
-export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onLogout }: NavbarProps) {
+export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onDashboard, onDeveloperPortal, onLogout }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const toggleMobileMenu = () => {
@@ -30,7 +32,7 @@ export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onLo
         >
           Seedora
         </button>
-        
+
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-3">
           <button
@@ -42,7 +44,31 @@ export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onLo
             </svg>
             Analyze
           </button>
-          
+
+          {user && (
+            <>
+              <button
+                onClick={onDashboard}
+                className="flex items-center gap-2 rounded-full border border-white/20 text-white px-4 py-2 text-sm hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Dashboard
+              </button>
+
+              <button
+                onClick={onDeveloperPortal}
+                className="flex items-center gap-2 rounded-full border border-white/20 text-white px-4 py-2 text-sm hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                API
+              </button>
+            </>
+          )}
+
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -86,27 +112,22 @@ export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onLo
           className="md:hidden relative w-8 h-8 flex flex-col justify-center items-center group"
           aria-label="Toggle mobile menu"
         >
-          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'rotate-45 translate-y-0.5' : '-translate-y-1'
-          }`}></span>
-          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
-          }`}></span>
-          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-1'
-          }`}></span>
+          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'rotate-45 translate-y-0.5' : '-translate-y-1'
+            }`}></span>
+          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
+            }`}></span>
+          <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${isMobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-1'
+            }`}></span>
         </button>
       </nav>
 
       {/* Mobile Menu Overlay */}
-      <div className={`md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
-        isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`} onClick={closeMobileMenu}></div>
+      <div className={`md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`} onClick={closeMobileMenu}></div>
 
       {/* Mobile Dropdown Menu */}
-      <div className={`md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-white/10 transform transition-all duration-300 ease-in-out origin-top ${
-        isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'
-      }`}>
+      <div className={`md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-white/10 transform transition-all duration-300 ease-in-out origin-top ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'
+        }`}>
         <div className="flex flex-col p-4 space-y-4 max-w-7xl mx-auto">
           {/* Analyze Button */}
           <button
@@ -135,6 +156,34 @@ export default function Navbar({ user, onLogin, onSignup, onHome, onUpload, onLo
                   {user.username || user.email}
                 </span>
               </div>
+
+              {/* Dashboard Button */}
+              <button
+                onClick={() => {
+                  onDashboard?.()
+                  closeMobileMenu()
+                }}
+                className="flex items-center gap-3 rounded-xl border border-white/20 px-4 py-3 text-sm text-white hover:border-white/40 hover:bg-white/5 transition-all duration-300 w-full"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Dashboard
+              </button>
+
+              {/* API Button */}
+              <button
+                onClick={() => {
+                  onDeveloperPortal?.()
+                  closeMobileMenu()
+                }}
+                className="flex items-center gap-3 rounded-xl border border-white/20 px-4 py-3 text-sm text-white hover:border-white/40 hover:bg-white/5 transition-all duration-300 w-full"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                API
+              </button>
 
               {/* Logout Button */}
               <button

@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react'
 import Navbar from './components/navbar'
 import LandingPage from './components/LandingPage'
 import UploadPage from './components/UploadPage'
+import Dashboard from './components/Dashboard'
+import DeveloperPortal from './components/DeveloperPortal'
 import Footer from './components/footter'
 import Auth from './components/Auth'
 import AuthSuccess from './components/AuthSuccess'
-import AnimatedBackground from './components/AnimatedBackground'
 import BackgroundAnalysis from './components/BackgroundAnalysis'
 import { AnalysisProvider } from './contexts/AnalysisContext'
 
@@ -15,7 +16,7 @@ function getToken() {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'upload' | 'login' | 'signup' | 'auth-success'>('home')
+  const [view, setView] = useState<'home' | 'upload' | 'dashboard' | 'developer-portal' | 'login' | 'signup' | 'auth-success'>('home')
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -32,13 +33,13 @@ function App() {
       setLoading(false)
       return
     }
-    
+
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       setLoading(false)
       setUser(null)
     }, 5000)
-    
+
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/me`, {
       headers: { 'x-auth-token': token },
     })
@@ -64,31 +65,30 @@ function App() {
   return (
     <AnalysisProvider>
       <div className={`w-screen bg-black text-white flex flex-col ${view === 'login' || view === 'signup' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
-        <Navbar
-          user={user}
-          onLogin={() => setView('login')}
-          onSignup={() => setView('signup')}
-          onHome={() => setView('home')}
-          onUpload={() => setView('upload')}
-          onLogout={handleLogout}
-        />
+        {/* Hide navbar on auth pages */}
+        {view !== 'login' && view !== 'signup' && (
+          <Navbar
+            user={user}
+            onLogin={() => setView('login')}
+            onSignup={() => setView('signup')}
+            onLogout={handleLogout}
+            onHome={() => setView('home')}
+            onUpload={() => setView('upload')}
+            onDashboard={() => setView('dashboard')}
+            onDeveloperPortal={() => setView('developer-portal')}
+          />
+        )}
         <main className="flex-1">
           {view === 'upload' ? (
             <UploadPage onBack={() => setView('home')} />
+          ) : view === 'dashboard' ? (
+            <Dashboard onBack={() => setView('home')} />
+          ) : view === 'developer-portal' ? (
+            <DeveloperPortal onBack={() => setView('home')} />
           ) : view === 'login' ? (
-            <div className="relative flex items-center justify-center h-full overflow-hidden px-4 sm:px-6 py-8">
-              <AnimatedBackground />
-              <div className="relative z-10">
-                <Auth initialMode="login" />
-              </div>
-            </div>
+            <Auth initialMode="login" onBack={() => setView('home')} />
           ) : view === 'signup' ? (
-            <div className="relative flex items-center justify-center h-full overflow-hidden px-4 sm:px-6 py-8">
-              <AnimatedBackground />
-              <div className="relative z-10">
-                <Auth initialMode="signup" />
-              </div>
-            </div>
+            <Auth initialMode="signup" onBack={() => setView('home')} />
           ) : view === 'auth-success' ? (
             <AuthSuccess />
           ) : (

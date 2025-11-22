@@ -3,13 +3,20 @@ import sys
 import json
 import numpy as np
 import cv2
+import warnings
+
+# Suppress all warnings including protobuf warnings
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['PYTHONWARNINGS'] = 'ignore'
+
 import tensorflow as tf
 from tensorflow import keras
 import pickle
 
 # Suppress TensorFlow warnings and progress bars
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tf.get_logger().setLevel('ERROR')
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 # Define constants
 IMAGE_SIZE = (64, 64)
@@ -23,7 +30,7 @@ def load_model_and_preprocessing_data():
     if not os.path.exists(preprocessing_path):
         return None, None, None, {'error': 'Preprocessing file not found'}
 
-    model = keras.models.load_model(model_path)
+    model = keras.models.load_model(model_path, compile=False)
 
     with open(preprocessing_path, 'rb') as f:
         preprocessing_data = pickle.load(f)
