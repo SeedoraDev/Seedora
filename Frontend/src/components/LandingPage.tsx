@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import AnimatedBackground from './AnimatedBackground'
 import FAQ from './FAQ'
 
@@ -6,6 +7,14 @@ type LandingPageProps = {
 }
 
 export default function LandingPage({ onGetStarted }: LandingPageProps) {
+  const technologySectionRef = useRef<HTMLElement>(null)
+
+  const scrollToTechnology = () => {
+    technologySectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  }
 
   const stats = [
     { number: "212M", label: "Diabetic patients in India" },
@@ -25,19 +34,19 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
               Award-winning AI healthcare solution
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-white mb-6">
               Early Detection of
               <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Diabetic Foot Ulcers
               </span>
             </h1>
-            
+
             <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto mb-12 leading-relaxed">
-              ThermoFoot uses advanced AI and thermogram analysis to detect diabetic foot ulcers 
+              ThermoFoot uses advanced AI and thermogram analysis to detect diabetic foot ulcers
               before they become critical, helping prevent 100,000+ annual amputations in India.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <button
                 onClick={onGetStarted}
@@ -45,7 +54,10 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               >
                 Start Analysis
               </button>
-              <button className="px-6 py-2.5 border border-white/20 text-white rounded-full text-sm hover:bg-white/5 transition-all duration-300">
+              <button
+                onClick={scrollToTechnology}
+                className="px-6 py-2.5 border border-white/20 text-white rounded-full text-sm hover:bg-white/5 transition-all duration-300"
+              >
                 Learn More
               </button>
             </div>
@@ -97,7 +109,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       </section> */}
 
       {/* Technology Section */}
-      <section className="py-40 bg-transparent">
+      <section ref={technologySectionRef} className="py-40 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-light text-white mb-6">
@@ -107,7 +119,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               Combining deep learning, IoT, and medical expertise to transform diabetic care
             </p>
           </div>
-          
+
           {/* Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="group p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300">
@@ -173,7 +185,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               Recognized Excellence
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-6">
               <div className="mb-4 flex justify-center">
@@ -185,7 +197,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               <p className="text-white/70">2nd Place International</p>
               <p className="text-white/60">$35,000 Prize</p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="mb-4 flex justify-center">
                 <svg className="w-12 h-12 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -196,7 +208,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               <p className="text-white/70">First Runner-up</p>
               <p className="text-white/60">₹75,000 Prize</p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="mb-4 flex justify-center">
                 <svg className="w-12 h-12 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">

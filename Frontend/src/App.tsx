@@ -9,6 +9,8 @@ import Footer from './components/footter'
 import Auth from './components/Auth'
 import AuthSuccess from './components/AuthSuccess'
 import BackgroundAnalysis from './components/BackgroundAnalysis'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import TermsOfService from './components/TermsOfService'
 import { AnalysisProvider } from './contexts/AnalysisContext'
 
 function getToken() {
@@ -16,7 +18,7 @@ function getToken() {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'upload' | 'dashboard' | 'developer-portal' | 'login' | 'signup' | 'auth-success'>('home')
+  const [view, setView] = useState<'home' | 'upload' | 'dashboard' | 'developer-portal' | 'login' | 'signup' | 'auth-success' | 'privacy' | 'terms'>('home')
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -91,12 +93,22 @@ function App() {
             <Auth initialMode="signup" onBack={() => setView('home')} />
           ) : view === 'auth-success' ? (
             <AuthSuccess />
+          ) : view === 'privacy' ? (
+            <PrivacyPolicy onBack={() => setView('home')} />
+          ) : view === 'terms' ? (
+            <TermsOfService onBack={() => setView('home')} />
           ) : (
             <LandingPage onGetStarted={() => setView('upload')} />
           )}
         </main>
-        <Footer />
-        <BackgroundAnalysis currentView={view} />
+        <Footer
+          onPrivacy={() => setView('privacy')}
+          onTerms={() => setView('terms')}
+        />
+        <BackgroundAnalysis
+          currentView={view}
+          onViewDetails={() => setView('upload')}
+        />
       </div>
     </AnalysisProvider>
   )

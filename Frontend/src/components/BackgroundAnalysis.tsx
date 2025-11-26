@@ -3,15 +3,16 @@ import { useAnalysis } from '../contexts/AnalysisContext'
 
 interface BackgroundAnalysisProps {
   currentView: string
+  onViewDetails: () => void
 }
 
-export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisProps) {
+export default function BackgroundAnalysis({ currentView, onViewDetails }: BackgroundAnalysisProps) {
   const { analysisState, clearAnalysis } = useAnalysis()
   const [isMinimized, setIsMinimized] = useState(false)
 
   // Only show if there's analysis state AND user is not on upload page
-  const shouldShow = (analysisState.isAnalyzing || analysisState.result || analysisState.error) && 
-                    currentView !== 'upload'
+  const shouldShow = (analysisState.isAnalyzing || analysisState.result || analysisState.error) &&
+    currentView !== 'upload'
 
   if (!shouldShow) {
     return null
@@ -37,12 +38,11 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className={`bg-black/90 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl transition-all duration-300 ${
-        isMinimized ? 'w-16 h-16' : 'w-80'
-      }`}>
+      <div className={`bg-black/90 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl transition-all duration-300 ${isMinimized ? 'w-16 h-16' : 'w-80'
+        }`}>
         {isMinimized ? (
           // Minimized view
-          <div 
+          <div
             className="w-full h-full flex items-center justify-center cursor-pointer"
             onClick={() => setIsMinimized(false)}
           >
@@ -97,7 +97,7 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
                     <p className="text-white/60 text-xs">{analysisState.fileName}</p>
                   </div>
                 </div>
-                
+
                 {/* Progress bar */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-white/60">
@@ -105,7 +105,7 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
                     <span>{getElapsedTime()}</span>
                   </div>
                   <div className="w-full bg-white/10 rounded-full h-1.5">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-400 to-purple-400 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${analysisState.progress}%` }}
                     ></div>
@@ -120,7 +120,7 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
                   </svg>
                   <span className="text-white text-sm font-medium">Analysis Complete</span>
                 </div>
-                
+
                 <div className="bg-white/5 rounded-xl p-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -129,20 +129,19 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
                         {analysisState.result.prediction.toFixed(4)}%
                       </p>
                     </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      analysisState.result.prediction < 30
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${analysisState.result.prediction < 30
                         ? 'bg-green-400/20 text-green-400'
                         : analysisState.result.prediction < 70
-                        ? 'bg-yellow-400/20 text-yellow-400'
-                        : 'bg-red-400/20 text-red-400'
-                    }`}>
+                          ? 'bg-yellow-400/20 text-yellow-400'
+                          : 'bg-red-400/20 text-red-400'
+                      }`}>
                       {getRiskLevel(analysisState.result.prediction)} Risk
                     </div>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => window.location.href = '/upload'}
+                  onClick={onViewDetails}
                   className="w-full bg-white text-black text-sm font-medium py-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   View Details
@@ -156,13 +155,13 @@ export default function BackgroundAnalysis({ currentView }: BackgroundAnalysisPr
                   </svg>
                   <span className="text-white text-sm font-medium">Analysis Failed</span>
                 </div>
-                
+
                 <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-3">
                   <p className="text-red-400 text-xs">{analysisState.error}</p>
                 </div>
 
                 <button
-                  onClick={() => window.location.href = '/upload'}
+                  onClick={onViewDetails}
                   className="w-full bg-white text-black text-sm font-medium py-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   Try Again
