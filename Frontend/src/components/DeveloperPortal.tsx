@@ -29,10 +29,8 @@ export default function DeveloperPortal({ onBack }: DeveloperPortalProps) {
   const [showNewKeyModal, setShowNewKeyModal] = useState(false)
   const [newKeyName, setNewKeyName] = useState('')
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null)
-  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
-  const [loading, setLoading] = useState(true)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001'
 
@@ -61,8 +59,6 @@ export default function DeveloperPortal({ onBack }: DeveloperPortalProps) {
       }
     } catch (error) {
       console.error('Failed to fetch API keys:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -131,17 +127,7 @@ export default function DeveloperPortal({ onBack }: DeveloperPortalProps) {
     }
   }
 
-  const toggleKeyVisibility = (id: string) => {
-    setVisibleKeys(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
-      }
-      return newSet
-    })
-  }
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
