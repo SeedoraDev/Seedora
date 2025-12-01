@@ -32,7 +32,7 @@ export default function DeveloperPortal({ onBack }: DeveloperPortalProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+  const API_URL = 'https://seedora.onrender.com'
 
   const getToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token')

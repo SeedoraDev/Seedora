@@ -42,7 +42,7 @@ function App() {
       setUser(null)
     }, 5000)
 
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/me`, {
+    fetch(`${'https://seedora.onrender.com'}/api/auth/me`, {
       headers: { 'x-auth-token': token },
     })
       .then(async (res) => {

@@ -66,7 +66,7 @@ export default function UploadPage({ onBack }: UploadPageProps) {
     formData.append('image', selectedFile);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/predict`, {
+      const response = await fetch(`${'https://seedora.onrender.com'}/api/predict`, {
         method: 'POST',
         body: formData,
       });

@@ -16,7 +16,7 @@ export default function Auth({ initialMode = 'login', onBack }: AuthProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+  const API_URL = 'https://seedora.onrender.com'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
