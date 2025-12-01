@@ -2,7 +2,7 @@ services:
   - type: web
     name: seedora-backend
     env: node
-    buildCommand: cd Backend && npm install
+    buildCommand: cd Backend && chmod +x render-build.sh && ./render-build.sh
     startCommand: cd Backend && node index.js
     envVars:
       - key: NODE_VERSION
